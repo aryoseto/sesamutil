@@ -77,5 +77,5 @@ for item in ctrlpar :
     sesamutil.list_to_excel(memcodechecklist, item[1])
     count += 1
 
-f"A total of {count} file(s) have been extracted!!"
+print(f"A total of {count} file(s) have been extracted!!")
 
