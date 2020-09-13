@@ -5,6 +5,7 @@ __copyright__   = "Copyright 2020, Ramzitech"
 __version__ = "0.0.1"
 
 import itertools
+import xlsxwriter
 
 
 def getForceDisp(filename, selection) :
@@ -137,6 +138,62 @@ def getFatRes(filename) :
 
     return outlist
 
+def getmemcodecheck(filename) :
+    ''' Member code check results from frameworks, FULL  '''
+    
+    #Extracting data
+    outlist = []
+    with open(filename, 'r') as toread :
+        for line in toread :
+            #Screening the select only lines with data
+            if is_number(line[118:127].strip()) :
+                #First line
+                if len(line.split()) == 14 :
+                    firstline = line.strip()
+                elif len(line.split()) == 11 :
+                    secondline = line .strip()
+                else :
+                    thirdline = line.strip()
+                    completeline = firstline.split() + secondline.split() + thirdline.split()
+                    
+                    outlist.append(completeline)
+    
+    #Extract headers
+    with open(filename, 'r') as toread :
+        for line in toread :
+            #First line
+            if len(line.split()) == 14 and line.split()[0] == "Member" :
+                firstline = line.strip()
+            elif len(line.split()) == 11 and line.split()[0] == "Phase" :
+                secondline = line.strip()
+            elif len(line.split()) == 8 and line.split()[0] == "UsfaM" :
+                thirdline = line.strip()
+                completeheader = firstline.split() + secondline.split() + thirdline.split()
+                break
+
+    # Adding header to the top of the list
+    outlist.insert(0, completeheader)
+
+    return outlist
+
+def list_to_excel(listname, excelname):
+    '''listname and excelname (including the extension, as string) '''
+    workbook = xlsxwriter.Workbook(excelname)
+    worksheet = workbook.add_worksheet()
+
+    #Start of rows and column
+    row = 0
+    for line in listname :
+        col = 0
+        for item in line :
+            if is_number(item) :
+                worksheet.write_number(row, col, float(item))
+            else:
+                worksheet.write(row, col, item)
+            col += 1
+        row +=1
+
+    workbook.close()
 
 
 
@@ -156,5 +213,11 @@ if __name__ == "__main__":
     #print(fatiguedict['JT106'])
     #print(dict(itertools.islice(fatiguedict.items(), 1)))
 
-    fatiguelist = getFatRes('SABFTG_UNSTIFFENED.LIS')
-    print(*fatiguelist[:2], sep='\n')
+    #fatiguelist = getFatRes('SABFTG_UNSTIFFENED.LIS')
+    #print(*fatiguelist[:2], sep='\n')
+
+    memcodechecklist = getmemcodecheck('SABSEIS_PRIMARY_ELE_H.LIS')
+    #print(*memcodechecklist[:5], sep='\n')
+    #print(len(memcodechecklist[3]))
+
+    list_to_excel(memcodechecklist, 'memcodecheck.xlsx')
