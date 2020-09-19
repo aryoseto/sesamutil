@@ -81,6 +81,15 @@ def is_number(astring):
     except ValueError:
         return False
 
+def slices(line, listofcolpos):
+    position = 0
+    outlist = []
+    for col in listofcolpos:
+        outlist.append(line[position:position + col ].strip())
+        position += col
+    return outlist
+
+
 def getFatRes(filename) :
     ''' Extracting fatigue analysis results from framework'''
     with open(filename, 'r') as toread :
@@ -176,6 +185,40 @@ def getmemcodecheck(filename) :
 
     return outlist
 
+def getjointcheckiso(filename) :
+    
+    #Extracting data
+    outlist = []
+    with open(filename, 'r') as toread :
+        for line in toread :
+            templist = slices(line,[9, 9, 9, 4, 9, 10, 8, 10, 10, 10, 10, 9, 7, 9] )
+            if is_number(templist[6]) :
+                #Identifying first line
+                if templist[0] != '' and  templist[1] != '' :
+                    firstline = templist
+
+                #Identifying second line
+                elif templist[0] == '' and templist[1] != '' :
+                    secondline = templist
+
+                #Last line
+                else :
+                    thirdline = templist
+                    comleteline =  [ *firstline ] + [ secondline[1] ] + [ secondline[2] ] + [ *secondline[6:] ] + [ *thirdline[6:] ]
+                    outlist.append(comleteline)
+    
+    header1 = "Joint    Brace    LoadCase CND Jnt/Per  Outcome   Usfac     PB       MBipb     MBopb      Ub       Qup     Qfp   L(a,b,c)"
+    header2 = "         Chord     Phase                          UsfaP     Pd       Mdipb     Mdopb     Theta    Quipb   Qfipb   CanFact"
+    header3 = "                                                  UsfaM  Method       Fyc     gammaRj     Gap     Quopb   Qfopb     d/D"
+
+    completeheader = header1.split() + header2.split() + header3.split()
+    outlist.insert(0, completeheader)
+
+    return outlist
+
+
+
+
 def list_to_excel(listname, excelname):
     '''listname and excelname (including the extension, as string) '''
     workbook = xlsxwriter.Workbook(excelname)
@@ -216,8 +259,15 @@ if __name__ == "__main__":
     #fatiguelist = getFatRes('SABFTG_UNSTIFFENED.LIS')
     #print(*fatiguelist[:2], sep='\n')
 
-    memcodechecklist = getmemcodecheck('SABSEIS_PRIMARY_ELE_H.LIS')
+    #memcodechecklist = getmemcodecheck('SABSEIS_PRIMARY_ELE_H.LIS')
     #print(*memcodechecklist[:5], sep='\n')
     #print(len(memcodechecklist[3]))
 
-    list_to_excel(memcodechecklist, 'memcodecheck.xlsx')
+    #list_to_excel(memcodechecklist, 'memcodecheck.xlsx')
+
+    #listsampe = "   hoahoha ohaoh aoho hohaohoha ohoa"
+    #parsedline = slices(listsampe, [3, 5 , 3, 5 ])
+    #print(parsedline)
+
+    jointchecklist = getjointcheckiso('SABSEIS_PRIMARYJOINT_ELE_H.LIS')
+    print(jointchecklist[:2])
