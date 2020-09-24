@@ -216,7 +216,36 @@ def getjointcheckiso(filename) :
 
     return outlist
 
+def getconecheckapi(filename) :
+    
+    #Extracting data
+    outlist = []
+    with open(filename, 'r') as toread :
+        for line in toread :
+            templist = slices(line,[9, 9, 5, 8, 9, 9, 9, 10, 10, 10, 10, 9] )
+            if is_number(templist[6]) :
+                #Identifying first line
+                if templist[0] != '' and  templist[1] != '' :
+                    firstline = templist
 
+                #Identifying second line
+                elif templist[0] == '' and templist[3] != '' :
+                    secondline = templist
+
+                #Last line
+                else :
+                    thirdline = templist
+                    comleteline =  [ *firstline ] + [ secondline[1] ] + [ secondline[3] ] + [ *secondline[6:] ] + [ thirdline[6] ] + [ thirdline[7] ] + [ *thirdline[10:] ]
+                    outlist.append(comleteline)
+    
+    header1 = " Member   LoadCase CND Type     Joint/Po Outcome  Usfact    Yield    Tensile    Dummy      fc        fbm"
+    header2 = "           Phase       SctNam                     Usfcon     Dia        t        tc        fb        fhm"
+    header3 = "                                                  Usfcyl    alpha                         ftot       Fhc"
+
+    completeheader = header1.split() + header2.split() + header3.split()
+    outlist.insert(0, completeheader)
+
+    return outlist
 
 
 def list_to_excel(listname, excelname):
@@ -269,5 +298,8 @@ if __name__ == "__main__":
     #parsedline = slices(listsampe, [3, 5 , 3, 5 ])
     #print(parsedline)
 
-    jointchecklist = getjointcheckiso('SABSEIS_PRIMARYJOINT_ELE_H.LIS')
-    print(jointchecklist[:2])
+    #jointchecklist = getjointcheckiso('SABSEIS_PRIMARYJOINT_ELE_H.LIS')
+    #print(jointchecklist[:2])
+
+    apiconelist = getconecheckapi("SABSEIS_CONE_ALE_API.LIS")
+    print(apiconelist[:2])
