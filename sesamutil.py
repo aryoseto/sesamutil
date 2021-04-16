@@ -267,6 +267,38 @@ def list_to_excel(listname, excelname):
 
     workbook.close()
 
+def getpileutil(filename) :
+    '''Pile stress utilisation from SPLICE.LIS'''
+    
+    with open(filename, 'r') as toread :
+        outlist = []
+        readstatus = False  #indicator of taking the data
+        notlinearstatus = True #indicator of finding the linearised results 
+        for line in toread :
+            
+            #Get load case number
+            if 'to generate equivalent linear' in line :
+                notlinearstatus = False
+            
+            if 'LOAD VECTOR NUMBER'in line :
+                femloadnum = line.split('=')[1].strip()
+                notlinearstatus = True
+
+            #Screen anything that has 11 items for each line
+            if ( len(line.split()) == 10 and readstatus == True and notlinearstatus == True 
+                    and is_number(line.split()[5])
+                    and is_number(line.split()[0]) ):
+                
+                outlist.append((femloadnum + '  ' + line).split())
+
+
+            if "MAXIMUM PILE STRESSES" in line :
+                readstatus = True
+            elif "Max/min values" in line :
+                readstatus = False
+
+
+    return outlist
 
 
 if __name__ == "__main__":
