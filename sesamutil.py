@@ -248,6 +248,39 @@ def getconecheckapi(filename) :
     return outlist
 
 
+def getmemcheck360 (filename) :
+
+    #Extracting data
+    outlist = []
+    with open(filename, 'r') as toread :
+        for line in toread :
+            templist = slices(line,[9, 9, 4, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 9] )
+            if is_number(templist[6]) :
+                #Identifying first line
+                if templist[0] != '' and  templist[1] != '' :
+                    firstline = templist
+
+                #Identifying second line
+                elif templist[0] == '' and templist[1] != '' :
+                    secondline = templist
+
+                #Last line
+                else :
+                    thirdline = templist
+                    comleteline =  [ *firstline ] + [secondline[1]] + [secondline[3]] + [*secondline[6:]] + [*thirdline[6:]]
+                    outlist.append(comleteline)
+    
+    header1 = "Member   LoadCase CND Type     Joint/Po Outcome  UFgove  UFAx/1/C    fa        fby       fbz    Fey/Fxe/M Kly/Phi-t Sly/Phi-c"
+    header2 = "          Phase       SctNam                     UFnorm  UFMy/2     Fa/fh    Fby/Sly   Fbz/Slz  Fez/Fhc/N Klz/Phi-h Slz/Phi-b"
+    header3 = "                                                 UFshea  UFMz/3   Press/Fy  Cmy/fv/El  Cmz/Fv     Cb/Lh    MemLen   Lb/gam-d"
+
+    completeheader = header1.split() + header2.split() + header3.split()
+    outlist.insert(0, completeheader)
+
+    return outlist
+
+
+
 def list_to_excel(listname, excelname):
     '''listname and excelname (including the extension, as string) '''
     workbook = xlsxwriter.Workbook(excelname)
@@ -333,5 +366,8 @@ if __name__ == "__main__":
     #jointchecklist = getjointcheckiso('SABSEIS_PRIMARYJOINT_ELE_H.LIS')
     #print(jointchecklist[:2])
 
-    apiconelist = getconecheckapi("SABSEIS_CONE_ALE_API.LIS")
-    print(apiconelist[:2])
+    #apiconelist = getconecheckapi("SABSEIS_CONE_ALE_API.LIS")
+    #print(apiconelist[:2])
+
+    aiscmemcheck = getmemcheck360("CMMP_NONTUBECHECK_TOPSIDES_PRIM_ELE.LIS")
+    print(aiscmemcheck[0])
