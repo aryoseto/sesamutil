@@ -334,7 +334,7 @@ def getpileutil(filename) :
     return outlist
 
 def getReactionGenie(filename) :
-    ''' Extract Displacement print from Genie output text2 format
+    ''' Extract Reaction print from Genie output text2 format
         filename: "filename.extension" '''
     
     with open(filename, 'r') as toread :
@@ -363,6 +363,45 @@ def getReactionGenie(filename) :
     outlist.insert(0, headerlist)
 
     return outlist
+    
+def getMemForceGenie(filename) :
+    ''' Extract Member Force print from Genie output text2 format
+        filename: "filename.extension" '''
+    
+    with open(filename, 'r') as toread :
+        outlist = []
+        
+        for line in toread :
+            
+            if len(line.split()) > 0 :
+                if line.split()[0] == "Name" and len(line.split()) == 2 :
+                    lcname = line.split()[1]
+            
+                if line.split()[0] == "Description" and len(line.split()) == 2 :
+                    lcdesc = line.split()[1]
+            
+                if line.split()[0] == "FEM" and line.split()[1] == "LC" and len(line.split()) == 3 :
+                    lcfemno = line.split()[2]
+
+                if len(line[:126].split()) == 9 and is_number(line.split()[2]) and is_number(line.split()[5]) :
+                    beamname = line.split()[0]
+                    completeline =  [lcname] + [lcdesc] + [lcfemno] + [ *line[:126].split() ]
+                    outlist.append(completeline)
+                
+                if len(line[:126].split()) == 8 and is_number(line.split()[2]) and is_number(line.split()[5]) :
+                    completeline = [lcname] + [lcdesc] + [lcfemno] + [beamname] + [ *line[:126].split() ]
+                    outlist.append(completeline)
+
+    # Adding header
+    headertext = "Name          Position      Length        NXX           NXY           NXZ           MXX           MXY           MXZ            "
+    headerlist = ["LCNAME", "DESC", "FEMLCNO"] + headertext.split() 
+    outlist.insert(0, headerlist)
+
+    return outlist
+
+
+
+
 
 def addLookupCol (outlist, listcolindex) :
     '''create a lookup column
